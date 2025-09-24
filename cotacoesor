@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Cotações - OR Technocabos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .dark {
+            --bg-primary: #1f2937;
+            --bg-secondary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --border: #4b5563;
+        }
+        
+        .light {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border: #d1d5db;
+        }
+        
+        .light body {
+            background-color: #2563eb;
+        }
+        
+        .theme-bg-primary { background-color: var(--bg-primary); }
+        .theme-bg-secondary { background-color: var(--bg-secondary); }
+        .theme-text-primary { color: var(--text-primary); }
+        .theme-text-secondary { color: var(--text-secondary); }
+        .theme-border { border-color: var(--border); }
+        
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+        }
+    </style>
+</head>
+<body class="light theme-bg-primary theme-text-primary transition-colors duration-300">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center">
+        <div class="theme-bg-secondary rounded-lg p-8 shadow-2xl w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="relative w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4 cursor-pointer hover:bg-blue-700 transition-colors" onclick="document.getElementById('loginLogoUpload').click()">
+                    <span id="loginLogoText" class="text-white font-bold text-2xl">OR</span>
+                    <img id="loginLogoImage" class="w-full h-full object-cover rounded-lg hidden" alt="Logo OR Technocabos">
+                    <input type="file" id="loginLogoUpload" accept="image/*" class="hidden">
+                </div>
+                <h1 class="text-2xl font-bold theme-text-primary mb-2">OR Technocabos</h1>
+                <p class="theme-text-secondary">Sistema de Cotações</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block theme-text-secondary text-sm font-medium mb-2">Senha de Acesso</label>
+                    <input type="password" id="passwordInput" class="w-full p-3 border theme-border rounded-lg theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Digite a senha">
+                </div>
+                
+                <button id="loginButton" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    Acessar Sistema
+                </button>
+                
+                <div id="loginError" class="text-red-600 text-sm text-center hidden">
+                    Senha incorreta. Tente novamente.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main System (Hidden initially) -->
+    <div id="mainSystem" class="min-h-screen hidden">
+        <!-- Header -->
+        <header class="theme-bg-secondary border-b theme-border p-4 no-print">
+            <div class="flex justify-between items-center max-w-7xl mx-auto">
+                <div class="flex items-center space-x-4">
+                    <div class="relative w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors" onclick="document.getElementById('headerLogoUpload').click()">
+                        <span id="headerLogoText" class="text-white font-bold text-xl">OR</span>
+                        <img id="headerLogoImage" class="w-full h-full object-cover rounded-lg hidden" alt="Logo OR Technocabos">
+                        <input type="file" id="headerLogoUpload" accept="image/*" class="hidden">
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold theme-text-primary">OR Technocabos</h1>
+                        <p class="theme-text-secondary">Sistema de Cotações</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="logoutButton" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                        Sair
+                    </button>
+                    <button id="themeToggle" class="p-2 rounded-lg theme-bg-primary theme-border border hover:opacity-80 transition-opacity">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="theme-bg-secondary border-b theme-border no-print">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex space-x-8">
+                    <button class="tab-btn py-4 px-6 border-b-2 border-blue-600 theme-text-primary font-medium" data-tab="nova-cotacao">
+                        Nova Cotação
+                    </button>
+                    <button class="tab-btn py-4 px-6 border-b-2 border-transparent theme-text-secondary hover:theme-text-primary" data-tab="lista">
+                        Lista
+                    </button>
+                    <button class="tab-btn py-4 px-6 border-b-2 border-transparent theme-text-secondary hover:theme-text-primary" data-tab="pesquisar">
+                        Pesquisar Cotações
+                    </button>
+                    <button class="tab-btn py-4 px-6 border-b-2 border-transparent theme-text-secondary hover:theme-text-primary" data-tab="visualizar">
+                        Visualizar Cotação
+                    </button>
+                    <button class="tab-btn py-4 px-6 border-b-2 border-transparent theme-text-secondary hover:theme-text-primary" data-tab="empresas">
+                        Empresas
+                    </button>
+                    <button class="tab-btn py-4 px-6 border-b-2 border-transparent theme-text-secondary hover:theme-text-primary" data-tab="registros">
+                        Registros
+                    </button>
+                    <button class="tab-btn py-4 px-6 border-b-2 border-transparent theme-text-secondary hover:theme-text-primary" data-tab="ranking">
+                        Ranking
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <main class="max-w-7xl mx-auto p-6">
+            <!-- Nova Cotação Tab -->
+            <div id="nova-cotacao" class="tab-content">
+                <div class="theme-bg-secondary rounded-lg p-6 shadow-lg">
+                    <!-- Cabeçalho da Cotação -->
+                    <div class="mb-6">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="relative w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors" onclick="document.getElementById('logoUpload').click()">
+                                <span id="logoText" class="text-white font-bold text-lg">OR</span>
+                                <img id="logoImage" class="w-full h-full object-cover rounded-lg hidden" alt="Logo OR Technocabos">
+                                <input type="file" id="logoUpload" accept="image/*" class="hidden">
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold theme-text-primary">OR Technocabos</h2>
+                                <p class="theme-text-secondary text-sm">Proposta Comercial</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Primeira linha: Nome da Empresa, Número da Solicitação, Revisão -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                            <div>
+                                <label class="block theme-text-secondary text-xs font-medium mb-1">Nome da Empresa</label>
+                                <input type="text" id="nomeEmpresa" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                            </div>
+                            <div>
+                                <label class="block theme-text-secondary text-xs font-medium mb-1">Número da Solicitação</label>
+                                <input type="text" id="numeroSolicitacao" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary text-sm focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block theme-text-secondary text-xs font-medium mb-1">Revisão</label>
+                                <input type="text" id="revisao" value="00" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 text-sm">
+                            </div>
+                        </div>
+                        
+                        <!-- Segunda linha: Data Solicitação, Meio Contato, Enviado via WhatsApp/E-mail em, Data Aprovação -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block theme-text-secondary text-xs font-medium mb-1">Data Solicitação</label>
+                                <input type="date" id="dataCotacao" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block theme-text-secondary text-xs font-medium mb-1">Meio Contato</label>
+                                <select id="meioContato" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 text-sm">
+                                    <option value="">Selecione</option>
+                                    <option value="WhatsApp">WhatsApp</option>
+                                    <option value="E-mail">E-mail</option>
+                                    <option value="Presencial">Presencial</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block theme-text-secondary text-xs font-medium mb-1">Enviado via WhatsApp/E-mail em:</label>
+                                <input type="date" id="dataEnvio" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block theme-text-secondary text-xs font-medium mb-1">Data Aprovação</label>
+                                <input type="date" id="dataAprovacao" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Produtos -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-lg font-semibold theme-text-primary">Produtos</h3>
+                            <button id="addProduto" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors no-print">
+                                + Adicionar
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full border theme-border rounded overflow-hidden text-sm">
+                                <thead class="theme-bg-primary">
+                                    <tr>
+                                        <th class="p-2 text-left theme-text-primary font-medium">Código</th>
+                                        <th class="p-2 text-left theme-text-primary font-medium">Descrição</th>
+                                        <th class="p-2 text-left theme-text-primary font-medium">Qtd</th>
+                                        <th class="p-2 text-left theme-text-primary font-medium">Valor Unit.</th>
+                                        <th class="p-2 text-left theme-text-primary font-medium">Subtotal</th>
+                                        <th class="p-2 text-left theme-text-primary font-medium no-print">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="produtosTable">
+                                    <!-- Produtos serão adicionados aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-3 text-right">
+                            <div class="inline-block theme-bg-primary p-3 rounded border theme-border">
+                                <span class="font-semibold theme-text-primary">Total Geral: R$ </span>
+                                <span id="totalGeral" class="text-lg font-bold text-blue-600">0,00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informações Adicionais -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block theme-text-secondary text-xs font-medium mb-1">Condição de Pagamento</label>
+                            <input type="text" id="condicaoPagamento" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: 30 dias após entrega">
+                            <p class="text-xs theme-text-secondary mt-1 font-medium">Faturamento sujeito à análise de crédito</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block theme-text-secondary text-xs font-medium mb-1">Prazo de Entrega</label>
+                            <input type="text" id="prazoEntrega" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ex: 15 dias úteis">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block theme-text-secondary text-xs font-medium mb-1">Método de Envio</label>
+                                <select id="metodoEnvio" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 text-sm">
+                                    <option value="">Selecione o método</option>
+                                    <option value="CIF - Nosso veículo para grande SP">CIF - Nosso veículo para grande SP</option>
+                                    <option value="FOB - Indicar transportadora">FOB - Indicar transportadora</option>
+                                    <option value="Cliente retira">Cliente retira</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block theme-text-secondary text-xs font-medium mb-1">Observações</label>
+                                <textarea id="observacoes" rows="2" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Observações adicionais..."></textarea>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block theme-text-secondary text-xs font-medium mb-1">Observações Internas</label>
+                            <textarea id="observacoesInternas" rows="6" class="w-full p-2 border theme-border rounded theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Observações para controle interno da empresa (não aparece na cotação)..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Rodapé -->
+                    <div class="border-t theme-border pt-4">
+                        <div class="text-center theme-text-secondary text-sm">
+                            <p class="mb-1"><strong>Validade dessa proposta comercial: 15 dias</strong></p>
+                            <p><strong>Resp. Fábio Pereira</strong></p>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="flex justify-end space-x-3 mt-4 no-print">
+                        <button id="salvarCotacao" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors text-sm font-medium">
+                            Salvar Cotação
+                        </button>
+                        <button id="atualizarCotacao" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition-colors text-sm font-medium hidden">
+                            Atualizar Cotação
+                        </button>
+                        <button id="cancelarEdicao" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors text-sm font-medium hidden">
+                            Cancelar Edição
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pesquisar Cotações Tab -->
+            <div id="pesquisar" class="tab-content hidden">
+                <div class="theme-bg-secondary rounded-lg p-6 shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold theme-text-primary">Pesquisar Cotações</h2>
+                        <div class="flex space-x-4">
+                            <input type="text" id="searchCotacoes" placeholder="Pesquisar por número ou empresa..." class="px-4 py-2 border theme-border rounded-lg theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full border theme-border rounded-lg overflow-hidden">
+                            <thead class="theme-bg-primary">
+                                <tr>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Nº</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Empresa</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Data</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Total</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Status</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cotacoesList">
+                                <!-- Cotações serão listadas aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empresas Tab -->
+            <div id="empresas" class="tab-content hidden">
+                <div class="theme-bg-secondary rounded-lg p-6 shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold theme-text-primary">Empresas</h2>
+                        <input type="text" id="searchEmpresas" placeholder="Pesquisar empresa..." class="px-4 py-2 border theme-border rounded-lg theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div id="empresasList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Empresas serão listadas aqui -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualizar Cotação Tab -->
+            <div id="visualizar" class="tab-content hidden">
+                <div class="theme-bg-secondary rounded-lg p-6 shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold theme-text-primary">Visualizar Cotação</h2>
+                        <div class="flex space-x-4">
+                            <input type="text" id="searchVisualizarCotacao" placeholder="Pesquisar empresa ou número de cotação..." class="px-4 py-2 border theme-border rounded-lg theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500 w-80">
+                        </div>
+                    </div>
+                    
+                    <!-- Tabela de Cotações -->
+                    <div class="overflow-x-auto mb-6">
+                        <table class="w-full border theme-border rounded-lg overflow-hidden">
+                            <thead class="theme-bg-primary">
+                                <tr>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Nº</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Empresa</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Data</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Total</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Status</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cotacoesVisualizarList">
+                                <!-- Cotações serão listadas aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Visualização da Cotação -->
+                    <div id="cotacaoVisualizada" class="hidden">
+                        <!-- Cabeçalho Compacto -->
+                        <div class="bg-blue-600 text-white p-4 rounded-t-lg">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center space-x-3">
+                                    <div class="relative w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center cursor-pointer hover:bg-opacity-30 transition-colors" onclick="document.getElementById('visualLogoUpload').click()">
+                                        <span id="visualLogoText" class="font-bold text-sm">OR</span>
+                                        <img id="visualLogoImage" class="w-full h-full object-cover rounded-lg hidden" alt="Logo OR Technocabos">
+                                        <input type="file" id="visualLogoUpload" accept="image/*" class="hidden">
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold">OR Technocabos</h3>
+                                        <p class="text-sm opacity-90">Proposta Comercial</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm opacity-90">Solicitação de cotação n°:</div>
+                                    <div id="visualNumero" class="text-xl font-bold"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Informações da Empresa -->
+                        <div class="bg-white p-4 border-x border-gray-200">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                    <span class="font-semibold text-gray-600">Cliente:</span>
+                                    <div id="visualEmpresa" class="font-medium text-gray-900"></div>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-600">Data:</span>
+                                    <div id="visualData" class="font-medium text-gray-900"></div>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-600">Revisão:</span>
+                                    <div id="visualRevisao" class="font-medium text-gray-900"></div>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-600">Status:</span>
+                                    <div id="visualStatus" class="font-medium"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Produtos Compactos -->
+                        <div class="border border-gray-200 bg-white">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="p-2 text-left font-semibold text-gray-700">Código</th>
+                                        <th class="p-2 text-left font-semibold text-gray-700">Descrição</th>
+                                        <th class="p-2 text-center font-semibold text-gray-700">Qtd</th>
+                                        <th class="p-2 text-right font-semibold text-gray-700">Valor Unit.</th>
+                                        <th class="p-2 text-right font-semibold text-gray-700">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="visualProdutos">
+                                    <!-- Produtos serão inseridos aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Total -->
+                        <div class="bg-blue-600 text-white p-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-lg font-semibold">Total Geral:</span>
+                                <span id="visualTotal" class="text-2xl font-bold"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Condições Compactas -->
+                        <div class="bg-white p-4 border-x border-b border-gray-200 rounded-b-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div id="visualPagamento" class="hidden">
+                                    <span class="font-semibold text-gray-600">Pagamento:</span>
+                                    <div class="text-gray-900"></div>
+                                </div>
+                                <div id="visualEntrega" class="hidden">
+                                    <span class="font-semibold text-gray-600">Entrega:</span>
+                                    <div class="text-gray-900"></div>
+                                </div>
+                                <div id="visualEnvio" class="hidden">
+                                    <span class="font-semibold text-gray-600">Envio:</span>
+                                    <div class="text-gray-900"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="visualObservacoes" class="mt-3 hidden">
+                                <span class="font-semibold text-gray-600">Observações:</span>
+                                <div class="text-gray-900 mt-1"></div>
+                            </div>
+                            
+                            <!-- Informações Legais e Rodapé -->
+                            <div class="mt-4 pt-3 border-t border-gray-300 space-y-3">
+                                <div class="text-xs text-gray-600 space-y-2">
+                                    <p><strong>Empresa optante pelo Simples Nacional (Não há cobrança de IPI)</strong></p>
+                                    <p><strong>Itens NCNR (Não Cancelável e Não Retornável):</strong> Chicote elétrico customizado para cada projeto, não sujeito a cancelamento ou devolução</p>
+                                    <p><strong>NCM:</strong> 85444200</p>
+                                    
+                                    <div class="mt-3 pt-2 border-t border-gray-300">
+                                        <p><strong>Política de descontos OR Technocabos:</strong></p>
+                                        <ul class="mt-1 space-y-1 ml-2">
+                                            <li>• Pagamento à vista 100% antecipado no pedido: 6,0%</li>
+                                            <li>• Pagamento à vista 50% sinal no pedido e 50% na entrega: 4,5%</li>
+                                            <li>• Pagamento à vista 100% na entrega: 3,0%</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center border-t border-gray-300 pt-3">
+                                    <p class="text-xs text-gray-600 mb-1"><strong>Validade dessa proposta comercial: 15 dias</strong></p>
+                                    <p class="text-xs text-gray-600"><strong>Resp. Fábio Pereira</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mensagem quando nenhuma cotação selecionada -->
+                    <div id="nenhumaCotacaoSelecionada" class="text-center py-12">
+                        <div class="text-gray-400 text-lg mb-2">📋</div>
+                        <p class="theme-text-secondary">Clique em uma cotação para visualizar</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista Tab -->
+            <div id="lista" class="tab-content hidden">
+                <div class="theme-bg-secondary rounded-lg p-6 shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold theme-text-primary">Lista de Controle</h2>
+                        <div class="flex space-x-3">
+                            <button id="addListaItem" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors text-sm font-medium">
+                                + Adicionar Item
+                            </button>
+                            <input type="text" id="searchLista" placeholder="Pesquisar..." class="px-4 py-2 border theme-border rounded-lg theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full border theme-border rounded-lg overflow-hidden text-sm">
+                            <thead class="theme-bg-primary">
+                                <tr>
+                                    <th class="p-2 text-left theme-text-primary font-medium">Data Solic</th>
+                                    <th class="p-2 text-left theme-text-primary font-medium">Meio Contato</th>
+                                    <th class="p-2 text-left theme-text-primary font-medium">Data Máx Envio</th>
+                                    <th class="p-2 text-left theme-text-primary font-medium">Data Envio</th>
+                                    <th class="p-2 text-left theme-text-primary font-medium">Tempo Resp</th>
+                                    <th class="p-2 text-left theme-text-primary font-medium">Meio Envio</th>
+                                    <th class="p-2 text-left theme-text-primary font-medium">Cliente</th>
+                                    <th class="p-2 text-left theme-text-primary font-medium">SO e Rev.</th>
+                                    <th class="p-2 text-left theme-text-primary font-medium">Valor Total</th>
+                                    <th class="p-2 text-left theme-text-primary font-medium">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaTable">
+                                <!-- Lista será preenchida aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registros Tab -->
+            <div id="registros" class="tab-content hidden">
+                <div class="theme-bg-secondary rounded-lg p-6 shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold theme-text-primary">Registros de Produtos</h2>
+                        <div class="flex space-x-3">
+                            <input type="text" id="searchRegistros" placeholder="Pesquisar código ou descrição..." class="px-4 py-2 border theme-border rounded-lg theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500">
+                            <select id="filtroEmpresaRegistros" class="px-4 py-2 border theme-border rounded-lg theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todas as empresas</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full border theme-border rounded-lg overflow-hidden text-sm">
+                            <thead class="theme-bg-primary">
+                                <tr>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Código</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Descrição</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Empresa</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Última Cotação</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Último Valor</th>
+                                    <th class="p-3 text-left theme-text-primary font-medium">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registrosTable">
+                                <!-- Registros serão listados aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ranking Tab -->
+            <div id="ranking" class="tab-content hidden">
+                <div class="theme-bg-secondary rounded-lg p-6 shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold theme-text-primary">Ranking e Estatísticas</h2>
+                        <div class="flex space-x-3">
+                            <select id="filtroMes" class="px-4 py-2 border theme-border rounded-lg theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todos os meses</option>
+                                <option value="1">Janeiro</option>
+                                <option value="2">Fevereiro</option>
+                                <option value="3">Março</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Maio</option>
+                                <option value="6">Junho</option>
+                                <option value="7">Julho</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                            <select id="filtroAno" class="px-4 py-2 border theme-border rounded-lg theme-bg-primary theme-text-primary focus:ring-2 focus:ring-blue-500">
+                                <option value="">Todos os anos</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                                <option value="2029">2029</option>
+                                <option value="2030">2030</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+                        <div class="theme-bg-primary p-4 rounded-lg border theme-border text-center">
+                            <h3 class="text-sm font-semibold theme-text-primary mb-2">Cotações do Período</h3>
+                            <p id="cotacoesMes" class="text-2xl font-bold text-blue-600">0</p>
+                        </div>
+                        
+                        <div class="theme-bg-primary p-4 rounded-lg border theme-border text-center">
+                            <h3 class="text-sm font-semibold theme-text-primary mb-2">Pedidos Fechados</h3>
+                            <p id="pedidosFechados" class="text-2xl font-bold text-green-600">0</p>
+                        </div>
+                        
+                        <div class="theme-bg-primary p-4 rounded-lg border theme-border text-center">
+                            <h3 class="text-sm font-semibold theme-text-primary mb-2">Pedidos Pendentes</h3>
+                            <p id="pedidosPendentes" class="text-2xl font-bold text-yellow-600">0</p>
+                        </div>
+                        
+                        <div class="theme-bg-primary p-4 rounded-lg border theme-border text-center">
+                            <h3 class="text-sm font-semibold theme-text-primary mb-2">Pedidos Cancelados</h3>
+                            <p id="pedidosCancelados" class="text-2xl font-bold text-red-600">0</p>
+                        </div>
+                        
+                        <div class="theme-bg-primary p-4 rounded-lg border theme-border text-center">
+                            <h3 class="text-sm font-semibold theme-text-primary mb-2">Taxa de Conversão</h3>
+                            <p id="taxaConversao" class="text-2xl font-bold text-purple-600">0%</p>
+                        </div>
+                        
+                        <div class="theme-bg-primary p-4 rounded-lg border theme-border text-center">
+                            <h3 class="text-sm font-semibold theme-text-primary mb-2">Faturamento Total</h3>
+                            <p id="faturamentoTotal" class="text-lg font-bold text-emerald-600">R$ 0,00</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold theme-text-primary mb-4">Ranking por Faturamento</h3>
+                        <div id="rankingEmpresas" class="space-y-3">
+                            <!-- Ranking será exibido aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sistema de dados
+        let cotacoes = JSON.parse(localStorage.getItem('cotacoes')) || [];
+        let proximoNumero = parseInt(localStorage.getItem('proximoNumero')) || 1533;
+        let produtoCounter = 0;
+        let listaItens = JSON.parse(localStorage.getItem('listaItens')) || [];
+        let registrosProdutos = JSON.parse(localStorage.getItem('registrosProdutos')) || [];
+        const CORRECT_PASSWORD = 'esc4979or';
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            setupLogin();
+            initializeSystem();
+            setupEventListeners();
+            updateNumeroSolicitacao();
+            setDataAtual();
+            loadCotacoes();
+            loadEmpresas();
+            updateRanking();
+            setupLogoUpload();
+        });
+
+        function setupLogin() {
+            const loginButton = document.getElementById('loginButton');
+            const passwordInput = document.getElementById('passwordInput');
+            const loginError = document.getElementById('loginError');
+            const logoutButton = document.getElementById('logoutButton');
+
+            // Verificar se já está logado
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            if (isLoggedIn === 'true') {
+                showMainSystem();
+            }
+
+            // Login
+            loginButton.addEventListener('click', handleLogin);
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+
+            // Logout
+            logoutButton.addEventListener('click', function() {
+                sessionStorage.removeItem('isLoggedIn');
+                showLoginScreen();
+            });
+
+            function handleLogin() {
+                const password = passwordInput.value;
+                
+                if (password === CORRECT_PASSWORD) {
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    showMainSystem();
+                    loginError.classList.add('hidden');
+                    passwordInput.value = '';
+                } else {
+                    loginError.classList.remove('hidden');
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            }
+
+            function showMainSystem() {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainSystem').classList.remove('hidden');
+            }
+
+            function showLoginScreen() {
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('mainSystem').classList.add('hidden');
+                passwordInput.focus();
+            }
+        }
+
+        function initializeSystem() {
+            // Configurar tema
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.className = savedTheme + ' theme-bg-primary theme-text-primary transition-colors duration-300';
+            updateThemeIcon(savedTheme);
+        }
+
+        function setupEventListeners() {
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+            
+            // Produtos
+            document.getElementById('addProduto').addEventListener('click', addProduto);
+            
+            // Salvar cotação
+            document.getElementById('salvarCotacao').addEventListener('click', salvarCotacao);
+            document.getElementById('atualizarCotacao').addEventListener('click', atualizarCotacao);
+            document.getElementById('cancelarEdicao').addEventListener('click', cancelarEdicao);
+            
+            // Pesquisa
+            document.getElementById('searchCotacoes').addEventListener('input', filterCotacoes);
+            document.getElementById('searchEmpresas').addEventListener('input', filterEmpresas);
+            document.getElementById('searchVisualizarCotacao').addEventListener('input', filterCotacoesVisualizar);
+            document.getElementById('searchLista').addEventListener('input', filterLista);
+            document.getElementById('filtroMes').addEventListener('change', updateRanking);
+            document.getElementById('filtroAno').addEventListener('change', updateRanking);
+            document.getElementById('searchRegistros').addEventListener('input', filterRegistros);
+            document.getElementById('filtroEmpresaRegistros').addEventListener('change', filterRegistros);
+            
+            // Lista
+            document.getElementById('addListaItem').addEventListener('click', addListaItem);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.body.className = newTheme + ' theme-bg-primary theme-text-primary transition-colors duration-300';
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            document.getElementById('themeIcon').textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function switchTab(tabName) {
+            // Atualizar botões
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-600', 'theme-text-primary');
+                btn.classList.add('border-transparent', 'theme-text-secondary');
+            });
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'theme-text-secondary');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-blue-600', 'theme-text-primary');
+            
+            // Mostrar conteúdo
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            document.getElementById(tabName).classList.remove('hidden');
+            
+            // Atualizar dados se necessário
+            if (tabName === 'pesquisar') loadCotacoes();
+            if (tabName === 'empresas') loadEmpresas();
+            if (tabName === 'visualizar') loadCotacoesVisualizar();
+            if (tabName === 'lista') loadLista();
+            if (tabName === 'registros') loadRegistros();
+            if (tabName === 'ranking') updateRanking();
+        }
+
+        function updateNumeroSolicitacao() {
+            document.getElementById('numeroSolicitacao').value = proximoNumero.toString().padStart(4, '0');
+        }
+
+        function setDataAtual() {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataCotacao').value = hoje;
+        }
+
+        function addProduto() {
+            produtoCounter++;
+            const tbody = document.getElementById('produtosTable');
+            const row = document.createElement('tr');
+            row.className = 'border-b theme-border';
+            row.innerHTML = `
+                <td class="p-2 w-24 relative">
+                    <input type="text" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-sm codigo-input focus:ring-2 focus:ring-blue-500" placeholder="Código" maxlength="7">
+                    <div class="autocomplete-list absolute z-50 w-full theme-bg-primary border theme-border rounded-lg shadow-xl hidden max-h-48 overflow-y-auto"></div>
+                </td>
+                <td class="p-2 relative">
+                    <input type="text" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-sm descricao-input focus:ring-2 focus:ring-blue-500" placeholder="Descrição do produto">
+                    <div class="autocomplete-list absolute z-50 w-full theme-bg-primary border theme-border rounded-lg shadow-xl hidden max-h-48 overflow-y-auto"></div>
+                </td>
+                <td class="p-2 w-20">
+                    <input type="number" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary quantidade text-sm" min="1" value="1" onchange="calcularSubtotal(this)">
+                </td>
+                <td class="p-2 w-28">
+                    <input type="number" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary valor-unitario text-sm" step="0.01" min="0" placeholder="0,00" onchange="calcularSubtotal(this)">
+                </td>
+                <td class="p-2">
+                    <span class="subtotal font-semibold theme-text-primary text-sm">R$ 0,00</span>
+                </td>
+                <td class="p-2 no-print">
+                    <button onclick="removerProduto(this)" class="text-red-600 hover:text-red-800 text-xs">Remover</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+            
+            // Adicionar autocomplete aos inputs
+            setupAutocomplete(row);
+        }
+
+        function removerProduto(btn) {
+            btn.closest('tr').remove();
+            calcularTotalGeral();
+        }
+
+        function formatarValor(valor) {
+            return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function calcularSubtotal(input) {
+            const row = input.closest('tr');
+            const quantidade = parseFloat(row.querySelector('.quantidade').value) || 0;
+            const valorUnitario = parseFloat(row.querySelector('.valor-unitario').value) || 0;
+            const subtotal = quantidade * valorUnitario;
+            
+            row.querySelector('.subtotal').textContent = `R$ ${formatarValor(subtotal)}`;
+            calcularTotalGeral();
+        }
+
+        function calcularTotalGeral() {
+            let total = 0;
+            document.querySelectorAll('.subtotal').forEach(span => {
+                const valorTexto = span.textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
+                const valor = parseFloat(valorTexto) || 0;
+                total += valor;
+            });
+            
+            document.getElementById('totalGeral').textContent = formatarValor(total);
+        }
+
+        function salvarCotacao() {
+            const nomeEmpresa = document.getElementById('nomeEmpresa').value;
+            if (!nomeEmpresa) {
+                alert('Por favor, informe o nome da empresa.');
+                return;
+            }
+
+            const produtos = [];
+            document.querySelectorAll('#produtosTable tr').forEach(row => {
+                const codigo = row.querySelector('input[placeholder="Código"]').value;
+                const descricao = row.querySelector('input[placeholder="Descrição do produto"]').value;
+                const quantidade = row.querySelector('.quantidade').value;
+                const valorUnitario = row.querySelector('.valor-unitario').value;
+                
+                if (codigo || descricao) {
+                    produtos.push({
+                        codigo,
+                        descricao,
+                        quantidade: parseInt(quantidade) || 0,
+                        valorUnitario: parseFloat(valorUnitario) || 0
+                    });
+                }
+            });
+
+            if (produtos.length === 0) {
+                alert('Por favor, adicione pelo menos um produto.');
+                return;
+            }
+
+            const cotacao = {
+                id: Date.now(),
+                numero: document.getElementById('numeroSolicitacao').value,
+                nomeEmpresa,
+                revisao: document.getElementById('revisao').value,
+                data: document.getElementById('dataCotacao').value,
+                meioContato: document.getElementById('meioContato').value,
+                dataAprovacao: document.getElementById('dataAprovacao').value,
+                produtos,
+                condicaoPagamento: document.getElementById('condicaoPagamento').value,
+                prazoEntrega: document.getElementById('prazoEntrega').value,
+                metodoEnvio: document.getElementById('metodoEnvio').value,
+                observacoes: document.getElementById('observacoes').value,
+                observacoesInternas: document.getElementById('observacoesInternas').value,
+                dataEnvio: document.getElementById('dataEnvio').value,
+                total: parseFloat(document.getElementById('totalGeral').textContent.replace(',', '.')),
+                status: 'Pendente',
+                dataCriacao: new Date().toISOString()
+            };
+
+            cotacoes.push(cotacao);
+            localStorage.setItem('cotacoes', JSON.stringify(cotacoes));
+            
+            // Atualizar registros de produtos
+            atualizarRegistrosProdutos(cotacao);
+            
+            proximoNumero++;
+            localStorage.setItem('proximoNumero', proximoNumero.toString());
+            
+            alert('Cotação salva com sucesso!');
+            limparFormulario();
+            updateNumeroSolicitacao();
+        }
+
+        function limparFormulario() {
+            document.getElementById('nomeEmpresa').value = '';
+            document.getElementById('revisao').value = '00';
+            document.getElementById('meioContato').value = '';
+            document.getElementById('dataAprovacao').value = '';
+            document.getElementById('condicaoPagamento').value = '';
+            document.getElementById('prazoEntrega').value = '';
+            document.getElementById('metodoEnvio').value = '';
+            document.getElementById('observacoes').value = '';
+            document.getElementById('observacoesInternas').value = '';
+            document.getElementById('dataEnvio').value = '';
+            document.getElementById('produtosTable').innerHTML = '';
+            document.getElementById('totalGeral').textContent = '0,00';
+            setDataAtual();
+        }
+
+        function loadCotacoes() {
+            const tbody = document.getElementById('cotacoesList');
+            tbody.innerHTML = '';
+            
+            // Ordenar cotações por número (maior para menor)
+            const cotacoesOrdenadas = [...cotacoes].sort((a, b) => {
+                const numA = parseInt(a.numero);
+                const numB = parseInt(b.numero);
+                return numB - numA;
+            });
+            
+            cotacoesOrdenadas.forEach(cotacao => {
+                // Calcular total correto dos produtos
+                let totalCalculado = 0;
+                if (cotacao.produtos && cotacao.produtos.length > 0) {
+                    totalCalculado = cotacao.produtos.reduce((sum, produto) => {
+                        return sum + (produto.quantidade * produto.valorUnitario);
+                    }, 0);
+                }
+                
+                // Usar a data da cotação diretamente
+                const dataFormatada = cotacao.data ? new Date(cotacao.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+                
+                const row = document.createElement('tr');
+                row.className = 'border-b theme-border hover:theme-bg-primary';
+                row.innerHTML = `
+                    <td class="p-3 theme-text-primary">${cotacao.numero}</td>
+                    <td class="p-3 theme-text-primary">${cotacao.nomeEmpresa}</td>
+                    <td class="p-3 theme-text-primary">${dataFormatada}</td>
+                    <td class="p-3 theme-text-primary">R$ ${formatarValor(totalCalculado)}</td>
+                    <td class="p-3">
+                        <select class="px-2 py-1 border theme-border rounded theme-bg-primary theme-text-primary text-sm" onchange="updateStatus(${cotacao.id}, this.value)">
+                            <option value="Pendente" ${cotacao.status === 'Pendente' ? 'selected' : ''}>Pendente</option>
+                            <option value="Fechado" ${cotacao.status === 'Fechado' ? 'selected' : ''}>Fechado</option>
+                            <option value="Cancelado" ${cotacao.status === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
+                        </select>
+                    </td>
+                    <td class="p-3">
+                        <div class="flex space-x-2">
+                            <button onclick="editarCotacao(${cotacao.id})" class="text-blue-600 hover:text-blue-800 text-sm">Editar</button>
+                            <button onclick="visualizarCotacao(${cotacao.id})" class="text-green-600 hover:text-green-800 text-sm">Visualizar</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateStatus(id, status) {
+            const cotacao = cotacoes.find(c => c.id === id);
+            if (cotacao) {
+                cotacao.status = status;
+                localStorage.setItem('cotacoes', JSON.stringify(cotacoes));
+                updateRanking();
+            }
+        }
+
+        let cotacaoEditandoId = null;
+
+        function editarCotacao(id) {
+            const cotacao = cotacoes.find(c => c.id === id);
+            if (!cotacao) return;
+            
+            cotacaoEditandoId = id;
+            
+            // Preencher formulário com dados da cotação
+            document.getElementById('nomeEmpresa').value = cotacao.nomeEmpresa;
+            document.getElementById('numeroSolicitacao').value = cotacao.numero;
+            document.getElementById('revisao').value = cotacao.revisao;
+            document.getElementById('dataCotacao').value = cotacao.data;
+            document.getElementById('meioContato').value = cotacao.meioContato || '';
+            document.getElementById('dataAprovacao').value = cotacao.dataAprovacao || '';
+            document.getElementById('condicaoPagamento').value = cotacao.condicaoPagamento;
+            document.getElementById('prazoEntrega').value = cotacao.prazoEntrega;
+            document.getElementById('metodoEnvio').value = cotacao.metodoEnvio;
+            document.getElementById('observacoes').value = cotacao.observacoes;
+            document.getElementById('observacoesInternas').value = cotacao.observacoesInternas || '';
+            document.getElementById('dataEnvio').value = cotacao.dataEnvio || '';
+            
+            // Limpar produtos existentes
+            document.getElementById('produtosTable').innerHTML = '';
+            
+            // Adicionar produtos
+            cotacao.produtos.forEach(produto => {
+                addProduto();
+                const lastRow = document.querySelector('#produtosTable tr:last-child');
+                
+                lastRow.querySelector('input[placeholder="Código"]').value = produto.codigo;
+                lastRow.querySelector('input[placeholder="Descrição do produto"]').value = produto.descricao;
+                lastRow.querySelector('.quantidade').value = produto.quantidade;
+                lastRow.querySelector('.valor-unitario').value = produto.valorUnitario;
+                calcularSubtotal(lastRow.querySelector('.quantidade'));
+            });
+            
+            // Mostrar botão de atualizar e esconder salvar
+            document.getElementById('salvarCotacao').classList.add('hidden');
+            document.getElementById('atualizarCotacao').classList.remove('hidden');
+            document.getElementById('cancelarEdicao').classList.remove('hidden');
+            
+            // Ir para aba de nova cotação
+            switchTab('nova-cotacao');
+        }
+
+        function cancelarEdicao() {
+            cotacaoEditandoId = null;
+            limparFormulario();
+            updateNumeroSolicitacao();
+            
+            // Voltar aos botões normais
+            document.getElementById('salvarCotacao').classList.remove('hidden');
+            document.getElementById('atualizarCotacao').classList.add('hidden');
+            document.getElementById('cancelarEdicao').classList.add('hidden');
+        }
+
+        function atualizarCotacao() {
+            if (!cotacaoEditandoId) return;
+            
+            const nomeEmpresa = document.getElementById('nomeEmpresa').value;
+            if (!nomeEmpresa) {
+                alert('Por favor, informe o nome da empresa.');
+                return;
+            }
+
+            const produtos = [];
+            document.querySelectorAll('#produtosTable tr').forEach(row => {
+                const codigo = row.querySelector('input[placeholder="Código"]').value;
+                const descricao = row.querySelector('input[placeholder="Descrição do produto"]').value;
+                const quantidade = row.querySelector('.quantidade').value;
+                const valorUnitario = row.querySelector('.valor-unitario').value;
+                
+                if (codigo || descricao) {
+                    produtos.push({
+                        codigo,
+                        descricao,
+                        quantidade: parseInt(quantidade) || 0,
+                        valorUnitario: parseFloat(valorUnitario) || 0
+                    });
+                }
+            });
+
+            if (produtos.length === 0) {
+                alert('Por favor, adicione pelo menos um produto.');
+                return;
+            }
+
+            // Encontrar e atualizar a cotação existente
+            const cotacaoIndex = cotacoes.findIndex(c => c.id === cotacaoEditandoId);
+            if (cotacaoIndex !== -1) {
+                cotacoes[cotacaoIndex] = {
+                    ...cotacoes[cotacaoIndex],
+                    numero: document.getElementById('numeroSolicitacao').value,
+                    nomeEmpresa,
+                    revisao: document.getElementById('revisao').value,
+                    data: document.getElementById('dataCotacao').value,
+                    meioContato: document.getElementById('meioContato').value,
+                    dataAprovacao: document.getElementById('dataAprovacao').value,
+                    produtos,
+                    condicaoPagamento: document.getElementById('condicaoPagamento').value,
+                    prazoEntrega: document.getElementById('prazoEntrega').value,
+                    metodoEnvio: document.getElementById('metodoEnvio').value,
+                    observacoes: document.getElementById('observacoes').value,
+                    observacoesInternas: document.getElementById('observacoesInternas').value,
+                    dataEnvio: document.getElementById('dataEnvio').value,
+                    total: parseFloat(document.getElementById('totalGeral').textContent.replace(',', '.'))
+                };
+
+                localStorage.setItem('cotacoes', JSON.stringify(cotacoes));
+                
+                // Atualizar registros de produtos
+                atualizarRegistrosProdutos(cotacoes[cotacaoIndex]);
+                
+                alert('Cotação atualizada com sucesso!');
+                limparFormulario();
+                cotacaoEditandoId = null;
+                
+                // Voltar aos botões normais
+                document.getElementById('salvarCotacao').classList.remove('hidden');
+                document.getElementById('atualizarCotacao').classList.add('hidden');
+                document.getElementById('cancelarEdicao').classList.add('hidden');
+            }
+        }
+
+        function filterCotacoes() {
+            const search = document.getElementById('searchCotacoes').value.toLowerCase();
+            const rows = document.querySelectorAll('#cotacoesList tr');
+            
+            rows.forEach(row => {
+                const numero = row.cells[0].textContent.toLowerCase();
+                const empresa = row.cells[1].textContent.toLowerCase();
+                
+                if (numero.includes(search) || empresa.includes(search)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function loadEmpresas() {
+            const empresas = {};
+            
+            cotacoes.forEach(cotacao => {
+                if (!empresas[cotacao.nomeEmpresa]) {
+                    empresas[cotacao.nomeEmpresa] = [];
+                }
+                empresas[cotacao.nomeEmpresa].push(cotacao);
+            });
+            
+            const container = document.getElementById('empresasList');
+            container.innerHTML = '';
+            
+            Object.keys(empresas).forEach(nomeEmpresa => {
+                const cotacoesEmpresa = empresas[nomeEmpresa];
+                const pendentes = cotacoesEmpresa.filter(c => c.status === 'Pendente').length;
+                const fechadas = cotacoesEmpresa.filter(c => c.status === 'Fechado').length;
+                const canceladas = cotacoesEmpresa.filter(c => c.status === 'Cancelado').length;
+                
+                // Calcular valor total faturado (cotações fechadas)
+                const valorFaturado = cotacoesEmpresa
+                    .filter(c => c.status === 'Fechado')
+                    .reduce((total, cotacao) => {
+                        if (cotacao.produtos && cotacao.produtos.length > 0) {
+                            const totalCotacao = cotacao.produtos.reduce((sum, produto) => {
+                                return sum + (produto.quantidade * produto.valorUnitario);
+                            }, 0);
+                            return total + totalCotacao;
+                        }
+                        return total;
+                    }, 0);
+                
+                const div = document.createElement('div');
+                div.className = 'theme-bg-primary p-4 rounded-lg border theme-border';
+                div.innerHTML = `
+                    <h3 class="font-semibold theme-text-primary mb-2">${nomeEmpresa}</h3>
+                    <p class="theme-text-secondary text-sm mb-3">${cotacoesEmpresa.length} cotação(ões) total</p>
+                    
+                    <div class="grid grid-cols-3 gap-2 mb-3">
+                        <div class="text-center">
+                            <div class="text-xs theme-text-secondary">Pendentes</div>
+                            <div class="text-sm font-semibold text-yellow-600">${pendentes}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs theme-text-secondary">Fechadas</div>
+                            <div class="text-sm font-semibold text-green-600">${fechadas}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs theme-text-secondary">Canceladas</div>
+                            <div class="text-sm font-semibold text-red-600">${canceladas}</div>
+                        </div>
+                    </div>
+                    
+                    ${valorFaturado > 0 ? `
+                    <div class="mb-3 p-2 bg-green-50 rounded border border-green-200">
+                        <div class="text-xs text-green-700 font-medium">Valor Faturado</div>
+                        <div class="text-sm font-bold text-green-800">R$ ${formatarValor(valorFaturado)}</div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="space-y-1">
+                        ${cotacoesEmpresa
+                            .sort((a, b) => {
+                                const numA = parseInt(a.numero);
+                                const numB = parseInt(b.numero);
+                                return numB - numA;
+                            })
+                            .slice(0, 3).map(c => 
+                            `<div class="text-xs theme-text-secondary">${c.numero} - ${new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR')} - ${c.status}</div>`
+                        ).join('')}
+                        ${cotacoesEmpresa.length > 3 ? `<div class="text-xs theme-text-secondary">+${cotacoesEmpresa.length - 3} mais...</div>` : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function filterEmpresas() {
+            const search = document.getElementById('searchEmpresas').value.toLowerCase();
+            const empresaCards = document.querySelectorAll('#empresasList > div');
+            
+            empresaCards.forEach(card => {
+                const nomeEmpresa = card.querySelector('h3').textContent.toLowerCase();
+                
+                if (nomeEmpresa.includes(search)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function updateRanking() {
+            const filtroMes = document.getElementById('filtroMes').value;
+            const filtroAno = document.getElementById('filtroAno').value;
+            let cotacoesFiltradas = cotacoes;
+            
+            if (filtroMes || filtroAno) {
+                cotacoesFiltradas = cotacoes.filter(c => {
+                    const dataCotacao = new Date(c.data);
+                    let mesMatch = true;
+                    let anoMatch = true;
+                    
+                    if (filtroMes) {
+                        mesMatch = dataCotacao.getMonth() === parseInt(filtroMes) - 1;
+                    }
+                    
+                    if (filtroAno) {
+                        anoMatch = dataCotacao.getFullYear() === parseInt(filtroAno);
+                    }
+                    
+                    return mesMatch && anoMatch;
+                });
+            }
+            
+            // Estatísticas gerais
+            const totalCotacoes = cotacoesFiltradas.length;
+            const pedidosFechados = cotacoesFiltradas.filter(c => c.status === 'Fechado').length;
+            const pedidosPendentes = cotacoesFiltradas.filter(c => c.status === 'Pendente').length;
+            const pedidosCancelados = cotacoesFiltradas.filter(c => c.status === 'Cancelado').length;
+            const taxaConversao = totalCotacoes > 0 ? ((pedidosFechados / totalCotacoes) * 100).toFixed(1) : 0;
+            
+            // Calcular faturamento total do período
+            const faturamentoTotal = cotacoesFiltradas
+                .filter(c => c.status === 'Fechado')
+                .reduce((total, cotacao) => {
+                    if (cotacao.produtos && cotacao.produtos.length > 0) {
+                        const totalCotacao = cotacao.produtos.reduce((sum, produto) => {
+                            return sum + (produto.quantidade * produto.valorUnitario);
+                        }, 0);
+                        return total + totalCotacao;
+                    }
+                    return total;
+                }, 0);
+            
+            document.getElementById('cotacoesMes').textContent = totalCotacoes;
+            document.getElementById('pedidosFechados').textContent = pedidosFechados;
+            document.getElementById('pedidosPendentes').textContent = pedidosPendentes;
+            document.getElementById('pedidosCancelados').textContent = pedidosCancelados;
+            document.getElementById('taxaConversao').textContent = taxaConversao + '%';
+            document.getElementById('faturamentoTotal').textContent = `R$ ${formatarValor(faturamentoTotal)}`;
+            
+            // Ranking de empresas por faturamento
+            const empresasRanking = {};
+            cotacoesFiltradas.forEach(c => {
+                if (!empresasRanking[c.nomeEmpresa]) {
+                    empresasRanking[c.nomeEmpresa] = { count: 0, faturamento: 0 };
+                }
+                empresasRanking[c.nomeEmpresa].count++;
+                
+                // Adicionar ao faturamento se for fechado
+                if (c.status === 'Fechado' && c.produtos && c.produtos.length > 0) {
+                    const totalCotacao = c.produtos.reduce((sum, produto) => {
+                        return sum + (produto.quantidade * produto.valorUnitario);
+                    }, 0);
+                    empresasRanking[c.nomeEmpresa].faturamento += totalCotacao;
+                }
+            });
+            
+            const ranking = Object.entries(empresasRanking)
+                .sort(([,a], [,b]) => b.faturamento - a.faturamento)
+                .slice(0, 5);
+            
+            const rankingContainer = document.getElementById('rankingEmpresas');
+            rankingContainer.innerHTML = '';
+            
+            ranking.forEach(([empresa, dados], index) => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center theme-bg-primary p-3 rounded-lg border theme-border';
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">${index + 1}</span>
+                        <div>
+                            <div class="theme-text-primary font-medium">${empresa}</div>
+                            <div class="text-xs theme-text-secondary">${dados.count} cotação(ões)</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-semibold text-emerald-600">R$ ${formatarValor(dados.faturamento)}</div>
+                        <div class="text-xs theme-text-secondary">faturado</div>
+                    </div>
+                `;
+                rankingContainer.appendChild(div);
+            });
+        }
+
+        function setupLogoUpload() {
+            // Logo do formulário
+            const logoUpload = document.getElementById('logoUpload');
+            const logoImage = document.getElementById('logoImage');
+            const logoText = document.getElementById('logoText');
+            
+            // Logo do header
+            const headerLogoUpload = document.getElementById('headerLogoUpload');
+            const headerLogoImage = document.getElementById('headerLogoImage');
+            const headerLogoText = document.getElementById('headerLogoText');
+            
+            // Logo da visualização
+            const visualLogoUpload = document.getElementById('visualLogoUpload');
+            const visualLogoImage = document.getElementById('visualLogoImage');
+            const visualLogoText = document.getElementById('visualLogoText');
+            
+            // Logo da tela de login
+            const loginLogoUpload = document.getElementById('loginLogoUpload');
+            const loginLogoImage = document.getElementById('loginLogoImage');
+            const loginLogoText = document.getElementById('loginLogoText');
+            
+            function updateLogos(logoData) {
+                // Atualizar logo do formulário
+                logoImage.src = logoData;
+                logoImage.classList.remove('hidden');
+                logoText.classList.add('hidden');
+                
+                // Atualizar logo do header
+                headerLogoImage.src = logoData;
+                headerLogoImage.classList.remove('hidden');
+                headerLogoText.classList.add('hidden');
+                
+                // Atualizar logo da visualização
+                visualLogoImage.src = logoData;
+                visualLogoImage.classList.remove('hidden');
+                visualLogoText.classList.add('hidden');
+                
+                // Atualizar logo da tela de login
+                loginLogoImage.src = logoData;
+                loginLogoImage.classList.remove('hidden');
+                loginLogoText.classList.add('hidden');
+                
+                // Salvar no localStorage
+                localStorage.setItem('logoImage', logoData);
+            }
+            
+            logoUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        updateLogos(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            headerLogoUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        updateLogos(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            visualLogoUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        updateLogos(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            loginLogoUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        updateLogos(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Carregar logo salvo
+            const savedLogo = localStorage.getItem('logoImage');
+            if (savedLogo) {
+                updateLogos(savedLogo);
+            }
+        }
+
+        // Funções de visualização
+        function loadCotacoesVisualizar() {
+            const tbody = document.getElementById('cotacoesVisualizarList');
+            tbody.innerHTML = '';
+            
+            // Ordenar cotações por número decrescente
+            const cotacoesOrdenadas = [...cotacoes].sort((a, b) => {
+                const numA = parseInt(a.numero);
+                const numB = parseInt(b.numero);
+                return numB - numA;
+            });
+            
+            cotacoesOrdenadas.forEach(cotacao => {
+                const dataFormatada = cotacao.data ? new Date(cotacao.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+                
+                // Calcular total correto dos produtos
+                let totalCalculado = 0;
+                if (cotacao.produtos && cotacao.produtos.length > 0) {
+                    totalCalculado = cotacao.produtos.reduce((sum, produto) => {
+                        return sum + (produto.quantidade * produto.valorUnitario);
+                    }, 0);
+                }
+                
+                const row = document.createElement('tr');
+                row.className = 'border-b theme-border hover:theme-bg-primary';
+                row.innerHTML = `
+                    <td class="p-3 theme-text-primary">${cotacao.numero}</td>
+                    <td class="p-3 theme-text-primary">${cotacao.nomeEmpresa}</td>
+                    <td class="p-3 theme-text-primary">${dataFormatada}</td>
+                    <td class="p-3 theme-text-primary">R$ ${formatarValor(totalCalculado)}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded text-xs font-medium ${
+                            cotacao.status === 'Fechado' ? 'bg-green-100 text-green-800' :
+                            cotacao.status === 'Pendente' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                        }">${cotacao.status}</span>
+                    </td>
+                    <td class="p-3">
+                        <button onclick="carregarCotacaoVisualizar(${cotacao.id})" class="text-blue-600 hover:text-blue-800 text-sm">Visualizar</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function carregarCotacaoVisualizar(cotacaoId) {
+            if (!cotacaoId) {
+                document.getElementById('cotacaoVisualizada').classList.add('hidden');
+                document.getElementById('nenhumaCotacaoSelecionada').classList.remove('hidden');
+                return;
+            }
+            
+            const cotacao = cotacoes.find(c => c.id == cotacaoId);
+            if (!cotacao) return;
+            
+            // Mostrar visualização
+            document.getElementById('cotacaoVisualizada').classList.remove('hidden');
+            document.getElementById('nenhumaCotacaoSelecionada').classList.add('hidden');
+            
+            // Preencher dados
+            document.getElementById('visualNumero').textContent = cotacao.numero;
+            document.getElementById('visualEmpresa').textContent = cotacao.nomeEmpresa;
+            // Usar data de envio se disponível, senão usar data da cotação
+            const dataParaExibir = cotacao.dataEnvio || cotacao.data;
+            document.getElementById('visualData').textContent = dataParaExibir ? new Date(dataParaExibir + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+            document.getElementById('visualRevisao').textContent = cotacao.revisao;
+            
+            // Status com cor
+            const statusElement = document.getElementById('visualStatus');
+            statusElement.textContent = cotacao.status;
+            statusElement.className = 'font-medium px-2 py-1 rounded text-xs';
+            if (cotacao.status === 'Fechado') {
+                statusElement.className += ' bg-green-100 text-green-800';
+            } else if (cotacao.status === 'Pendente') {
+                statusElement.className += ' bg-yellow-100 text-yellow-800';
+            } else {
+                statusElement.className += ' bg-red-100 text-red-800';
+            }
+            
+            // Produtos
+            const tbody = document.getElementById('visualProdutos');
+            tbody.innerHTML = '';
+            let totalGeral = 0;
+            
+            cotacao.produtos.forEach(produto => {
+                const subtotal = produto.quantidade * produto.valorUnitario;
+                totalGeral += subtotal;
+                
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-200';
+                row.innerHTML = `
+                    <td class="p-2 text-gray-900">${produto.codigo || '-'}</td>
+                    <td class="p-2 text-gray-900">${produto.descricao}</td>
+                    <td class="p-2 text-center text-gray-900">${produto.quantidade}</td>
+                    <td class="p-2 text-right text-gray-900">R$ ${formatarValor(produto.valorUnitario)}</td>
+                    <td class="p-2 text-right font-semibold text-gray-900">R$ ${formatarValor(subtotal)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('visualTotal').textContent = `R$ ${formatarValor(totalGeral)}`;
+            
+            // Condições (mostrar apenas se preenchidas)
+            const pagamento = document.getElementById('visualPagamento');
+            if (cotacao.condicaoPagamento) {
+                pagamento.classList.remove('hidden');
+                pagamento.querySelector('div').innerHTML = cotacao.condicaoPagamento + '<br><small class="text-gray-500 font-medium">Faturamento sujeito à análise de crédito</small>';
+            } else {
+                pagamento.classList.add('hidden');
+            }
+            
+            const entrega = document.getElementById('visualEntrega');
+            if (cotacao.prazoEntrega) {
+                entrega.classList.remove('hidden');
+                entrega.querySelector('div').textContent = cotacao.prazoEntrega;
+            } else {
+                entrega.classList.add('hidden');
+            }
+            
+            const envio = document.getElementById('visualEnvio');
+            if (cotacao.metodoEnvio) {
+                envio.classList.remove('hidden');
+                envio.querySelector('div').textContent = cotacao.metodoEnvio;
+            } else {
+                envio.classList.add('hidden');
+            }
+            
+            const observacoes = document.getElementById('visualObservacoes');
+            if (cotacao.observacoes) {
+                observacoes.classList.remove('hidden');
+                observacoes.querySelector('div').textContent = cotacao.observacoes;
+            } else {
+                observacoes.classList.add('hidden');
+            }
+        }
+        
+        function filterCotacoesVisualizar() {
+            const search = document.getElementById('searchVisualizarCotacao').value.toLowerCase();
+            const rows = document.querySelectorAll('#cotacoesVisualizarList tr');
+            
+            rows.forEach(row => {
+                const numero = row.cells[0].textContent.toLowerCase();
+                const empresa = row.cells[1].textContent.toLowerCase();
+                
+                if (numero.includes(search) || empresa.includes(search)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function visualizarCotacao(cotacaoId) {
+            // Ir para aba de visualização
+            switchTab('visualizar');
+            
+            // Carregar a cotação
+            carregarCotacaoVisualizar(cotacaoId);
+        }
+
+        // Funções da aba Lista
+        function addListaItem() {
+            const tbody = document.getElementById('listaTable');
+            const row = document.createElement('tr');
+            row.className = 'border-b theme-border';
+            
+            const hoje = new Date().toISOString().split('T')[0];
+            
+            row.innerHTML = `
+                <td class="p-1">
+                    <input type="date" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-xs data-solicitacao" value="${hoje}">
+                </td>
+                <td class="p-1">
+                    <select class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-xs meio-contato-select">
+                        <option value="">Selecione</option>
+                        <option value="WhatsApp">WhatsApp</option>
+                        <option value="E-mail">E-mail</option>
+                        <option value="Presencial">Presencial</option>
+                    </select>
+                </td>
+                <td class="p-1">
+                    <input type="date" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-xs data-max-envio">
+                </td>
+                <td class="p-1">
+                    <input type="date" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-xs data-envio">
+                </td>
+                <td class="p-1">
+                    <span class="tempo-resposta text-xs theme-text-primary">-</span>
+                </td>
+                <td class="p-1">
+                    <select class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-xs meio-envio-select">
+                        <option value="">Selecione</option>
+                        <option value="E-mail">E-mail</option>
+                        <option value="WhatsApp">WhatsApp</option>
+                    </select>
+                </td>
+                <td class="p-1">
+                    <input type="text" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-xs cliente-input" placeholder="Cliente - Responsável">
+                </td>
+                <td class="p-1">
+                    <input type="text" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-xs so-input" placeholder="1547 Rev 00">
+                </td>
+                <td class="p-1">
+                    <input type="text" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-xs valor-total" placeholder="R$ 0,00" readonly>
+                </td>
+                <td class="p-1">
+                    <button onclick="removerListaItem(this)" class="text-red-600 hover:text-red-800 text-xs">Remover</button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+            
+            // Adicionar event listeners para calcular tempo de resposta
+            const dataSolicitacao = row.querySelector('.data-solicitacao');
+            const dataEnvio = row.querySelector('.data-envio');
+            const tempoResposta = row.querySelector('.tempo-resposta');
+            
+            function calcularTempo() {
+                if (dataSolicitacao.value && dataEnvio.value) {
+                    const inicio = new Date(dataSolicitacao.value);
+                    const fim = new Date(dataEnvio.value);
+                    const diffTime = Math.abs(fim - inicio);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    tempoResposta.textContent = diffDays + ' dias';
+                } else {
+                    tempoResposta.textContent = '-';
+                }
+                salvarListaItens(); // Salvar após calcular tempo
+            }
+            
+            dataSolicitacao.addEventListener('change', calcularTempo);
+            dataEnvio.addEventListener('change', calcularTempo);
+            
+            // Adicionar event listeners para salvar automaticamente
+            row.querySelectorAll('input, select').forEach(input => {
+                input.addEventListener('input', salvarListaItens);
+                input.addEventListener('change', salvarListaItens);
+            });
+            
+            // Adicionar event listener para buscar valor total pela SO e Revisão
+            const soInput = row.querySelector('.so-input');
+            const valorTotalInput = row.querySelector('.valor-total');
+            
+            soInput.addEventListener('input', function() {
+                const soValue = this.value.trim();
+                if (soValue) {
+                    let cotacao = null;
+                    
+                    // Verificar se o formato inclui revisão (ex: "1536 Rev 00" ou "1547 Rev 01")
+                    const formatoComRevisao = soValue.match(/^(\d+)\s*(?:Rev|rev|REV)\s*(\d+)$/i);
+                    
+                    if (formatoComRevisao) {
+                        // Buscar por número E revisão
+                        const numeroSO = formatoComRevisao[1];
+                        const revisao = formatoComRevisao[2].padStart(2, '0'); // Garantir 2 dígitos
+                        
+                        cotacao = cotacoes.find(c => {
+                            const numeroLimpo = c.numero.replace(/\s+/g, '');
+                            const revisaoLimpa = (c.revisao || '00').padStart(2, '0');
+                            return numeroLimpo === numeroSO && revisaoLimpa === revisao;
+                        });
+                    } else {
+                        // Buscar apenas pelo número (comportamento original)
+                        cotacao = cotacoes.find(c => {
+                            const numeroLimpo = c.numero.replace(/\s+/g, '');
+                            const soLimpo = soValue.replace(/\s+/g, '');
+                            return numeroLimpo.toLowerCase() === soLimpo.toLowerCase();
+                        });
+                    }
+                    
+                    if (cotacao) {
+                        // Calcular total correto dos produtos
+                        let totalCalculado = 0;
+                        if (cotacao.produtos && cotacao.produtos.length > 0) {
+                            totalCalculado = cotacao.produtos.reduce((sum, produto) => {
+                                return sum + (produto.quantidade * produto.valorUnitario);
+                            }, 0);
+                        }
+                        
+                        // Preencher o valor total
+                        valorTotalInput.value = `R$ ${formatarValor(totalCalculado)}`;
+                        valorTotalInput.style.backgroundColor = '#22c55e'; // Verde para indicar sucesso
+                        valorTotalInput.style.color = '#ffffff'; // Texto branco para contraste
+                        valorTotalInput.style.fontWeight = 'bold';
+                        
+                        // Preencher automaticamente o cliente se estiver vazio
+                        const clienteInput = row.querySelector('.cliente-input');
+                        if (!clienteInput.value) {
+                            clienteInput.value = cotacao.nomeEmpresa;
+                        }
+                        
+                        // Preencher automaticamente o meio de contato se disponível
+                        const meioContatoSelect = row.querySelector('.meio-contato-select');
+                        if (cotacao.meioContato && meioContatoSelect.value === '') {
+                            meioContatoSelect.value = cotacao.meioContato;
+                        }
+                        
+                        // Preencher automaticamente a data de solicitação se disponível
+                        if (cotacao.data && dataSolicitacao.value === hoje) {
+                            dataSolicitacao.value = cotacao.data;
+                        }
+                        
+                        // Preencher automaticamente a data de envio se disponível na cotação
+                        if (cotacao.dataEnvio && !dataEnvio.value) {
+                            dataEnvio.value = cotacao.dataEnvio;
+                        }
+                        
+                        // Recalcular tempo de resposta após preencher as datas
+                        calcularTempo();
+                    } else {
+                        // Limpar valor se não encontrar
+                        valorTotalInput.value = '';
+                        valorTotalInput.style.backgroundColor = '';
+                        valorTotalInput.style.color = '';
+                        valorTotalInput.style.fontWeight = '';
+                    }
+                } else {
+                    // Limpar valor se SO estiver vazia
+                    valorTotalInput.value = '';
+                    valorTotalInput.style.backgroundColor = '';
+                    valorTotalInput.style.color = '';
+                    valorTotalInput.style.fontWeight = '';
+                }
+                salvarListaItens(); // Salvar após buscar cotação
+            });
+        }
+        
+        function removerListaItem(btn) {
+            btn.closest('tr').remove();
+            salvarListaItens(); // Salvar após remover item
+        }
+        
+        function salvarListaItens() {
+            const rows = document.querySelectorAll('#listaTable tr');
+            const itens = [];
+            
+            rows.forEach(row => {
+                const item = {
+                    dataSolicitacao: row.querySelector('.data-solicitacao')?.value || '',
+                    meioContato: row.querySelector('.meio-contato-select')?.value || '',
+                    dataMaxEnvio: row.querySelector('.data-max-envio')?.value || '',
+                    dataEnvio: row.querySelector('.data-envio')?.value || '',
+                    tempoResposta: row.querySelector('.tempo-resposta')?.textContent || '-',
+                    meioEnvio: row.querySelector('.meio-envio-select')?.value || '',
+                    cliente: row.querySelector('.cliente-input')?.value || '',
+                    so: row.querySelector('.so-input')?.value || '',
+                    valorTotal: row.querySelector('.valor-total')?.value || ''
+                };
+                
+                // Só salvar se pelo menos um campo estiver preenchido
+                if (Object.values(item).some(value => value && value !== '-')) {
+                    itens.push(item);
+                }
+            });
+            
+            localStorage.setItem('listaItens', JSON.stringify(itens));
+        }
+        
+        function loadLista() {
+            const tbody = document.getElementById('listaTable');
+            tbody.innerHTML = ''; // Limpar tabela
+            
+            const itensSalvos = JSON.parse(localStorage.getItem('listaItens')) || [];
+            
+            itensSalvos.forEach(item => {
+                addListaItem(); // Adicionar nova linha
+                const lastRow = tbody.lastElementChild;
+                
+                // Preencher os campos com os dados salvos
+                if (lastRow) {
+                    const dataSolicitacao = lastRow.querySelector('.data-solicitacao');
+                    const meioContatoSelect = lastRow.querySelector('.meio-contato-select');
+                    const dataMaxEnvio = lastRow.querySelector('.data-max-envio');
+                    const dataEnvio = lastRow.querySelector('.data-envio');
+                    const tempoResposta = lastRow.querySelector('.tempo-resposta');
+                    const meioEnvioSelect = lastRow.querySelector('.meio-envio-select');
+                    const clienteInput = lastRow.querySelector('.cliente-input');
+                    const soInput = lastRow.querySelector('.so-input');
+                    const valorTotalInput = lastRow.querySelector('.valor-total');
+                    
+                    if (dataSolicitacao) dataSolicitacao.value = item.dataSolicitacao;
+                    if (meioContatoSelect) meioContatoSelect.value = item.meioContato;
+                    if (dataMaxEnvio) dataMaxEnvio.value = item.dataMaxEnvio;
+                    if (dataEnvio) dataEnvio.value = item.dataEnvio;
+                    if (tempoResposta) tempoResposta.textContent = item.tempoResposta;
+                    if (meioEnvioSelect) meioEnvioSelect.value = item.meioEnvio;
+                    if (clienteInput) clienteInput.value = item.cliente;
+                    if (soInput) soInput.value = item.so;
+                    if (valorTotalInput) {
+                        valorTotalInput.value = item.valorTotal;
+                        // Aplicar estilo verde se tiver valor
+                        if (item.valorTotal && item.valorTotal.includes('R$')) {
+                            valorTotalInput.style.backgroundColor = '#22c55e';
+                            valorTotalInput.style.color = '#ffffff';
+                            valorTotalInput.style.fontWeight = 'bold';
+                        }
+                    }
+                }
+            });
+        }
+        
+        function filterLista() {
+            const search = document.getElementById('searchLista').value.toLowerCase();
+            const rows = document.querySelectorAll('#listaTable tr');
+            
+            rows.forEach(row => {
+                const cliente = row.cells[6]?.querySelector('input')?.value.toLowerCase() || '';
+                const so = row.cells[7]?.querySelector('input')?.value.toLowerCase() || '';
+                
+                if (cliente.includes(search) || so.includes(search)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Funções do sistema de registros
+        function atualizarRegistrosProdutos(cotacao) {
+            cotacao.produtos.forEach(produto => {
+                if (produto.codigo && produto.descricao) {
+                    // Extrair prefixo da empresa (números antes do primeiro ponto)
+                    const prefixoEmpresa = produto.codigo.split('.')[0];
+                    
+                    // Verificar se já existe um registro para este código
+                    const registroExistente = registrosProdutos.find(r => r.codigo === produto.codigo);
+                    
+                    if (registroExistente) {
+                        // Atualizar registro existente
+                        registroExistente.descricao = produto.descricao;
+                        registroExistente.empresa = cotacao.nomeEmpresa;
+                        registroExistente.ultimaCotacao = cotacao.numero;
+                        registroExistente.ultimoValor = produto.valorUnitario;
+                        registroExistente.dataAtualizacao = new Date().toISOString();
+                    } else {
+                        // Criar novo registro
+                        registrosProdutos.push({
+                            codigo: produto.codigo,
+                            descricao: produto.descricao,
+                            empresa: cotacao.nomeEmpresa,
+                            prefixoEmpresa: prefixoEmpresa,
+                            ultimaCotacao: cotacao.numero,
+                            ultimoValor: produto.valorUnitario,
+                            dataCriacao: new Date().toISOString(),
+                            dataAtualizacao: new Date().toISOString()
+                        });
+                    }
+                }
+            });
+            
+            localStorage.setItem('registrosProdutos', JSON.stringify(registrosProdutos));
+        }
+        
+        function setupAutocomplete(row) {
+            const nomeEmpresaInput = document.getElementById('nomeEmpresa');
+            const codigoInput = row.querySelector('.codigo-input');
+            const descricaoInput = row.querySelector('.descricao-input');
+            const codigoAutocomplete = row.querySelector('.codigo-input').nextElementSibling;
+            const descricaoAutocomplete = row.querySelector('.descricao-input').nextElementSibling;
+            
+            // Autocomplete para código
+            codigoInput.addEventListener('input', function() {
+                const empresa = nomeEmpresaInput.value.trim();
+                const valor = this.value.trim();
+                
+                if (valor.length >= 1 && empresa) {
+                    const sugestoes = registrosProdutos.filter(produto => 
+                        produto.empresa.toLowerCase() === empresa.toLowerCase() &&
+                        produto.codigo.toLowerCase().startsWith(valor.toLowerCase())
+                    ).sort((a, b) => {
+                        // Ordenar códigos numericamente (do menor para o maior)
+                        const numA = parseInt(a.codigo.replace(/\D/g, '')) || 0;
+                        const numB = parseInt(b.codigo.replace(/\D/g, '')) || 0;
+                        return numA - numB;
+                    });
+                    
+                    mostrarSugestoes(codigoAutocomplete, sugestoes, 'codigo', row);
+                } else {
+                    codigoAutocomplete.classList.add('hidden');
+                }
+            });
+            
+            // Autocomplete para descrição
+            descricaoInput.addEventListener('input', function() {
+                const empresa = nomeEmpresaInput.value.trim();
+                const valor = this.value.trim();
+                
+                if (valor.length >= 2 && empresa) {
+                    const sugestoes = registrosProdutos.filter(produto => 
+                        produto.empresa.toLowerCase() === empresa.toLowerCase() &&
+                        produto.descricao.toLowerCase().includes(valor.toLowerCase())
+                    );
+                    
+                    mostrarSugestoes(descricaoAutocomplete, sugestoes, 'descricao', row);
+                } else {
+                    descricaoAutocomplete.classList.add('hidden');
+                }
+            });
+            
+            // Fechar autocomplete ao clicar fora
+            document.addEventListener('click', function(e) {
+                if (!codigoInput.contains(e.target) && !codigoAutocomplete.contains(e.target)) {
+                    codigoAutocomplete.classList.add('hidden');
+                }
+                if (!descricaoInput.contains(e.target) && !descricaoAutocomplete.contains(e.target)) {
+                    descricaoAutocomplete.classList.add('hidden');
+                }
+            });
+        }
+        
+        function mostrarSugestoes(container, sugestoes, tipo, row) {
+            container.innerHTML = '';
+            
+            if (sugestoes.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            // Calcular posição do input para posicionar as sugestões
+            const input = tipo === 'codigo' ? row.querySelector('.codigo-input') : row.querySelector('.descricao-input');
+            const rect = input.getBoundingClientRect();
+            
+            // Configurar posicionamento fixo
+            container.style.position = 'fixed';
+            container.style.left = rect.left + 'px';
+            container.style.top = (rect.bottom + 2) + 'px';
+            container.style.width = rect.width + 'px';
+            container.style.zIndex = '9999';
+            container.style.maxHeight = '200px';
+            
+            // Verificar se há espaço suficiente abaixo, senão mostrar acima
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            const suggestionsHeight = Math.min(200, sugestoes.length * 40);
+            
+            if (spaceBelow < suggestionsHeight && spaceAbove > suggestionsHeight) {
+                container.style.top = (rect.top - suggestionsHeight - 2) + 'px';
+            }
+            
+            // Mostrar todas as sugestões (sem limite)
+            sugestoes.forEach(produto => {
+                const div = document.createElement('div');
+                div.className = 'px-3 py-2 cursor-pointer text-sm border-b theme-border hover:theme-bg-secondary transition-colors duration-150';
+                div.innerHTML = `
+                    <div class="font-medium text-blue-600">${produto.codigo}</div>
+                `;
+                
+                div.addEventListener('click', function() {
+                    // Preencher os campos
+                    row.querySelector('.codigo-input').value = produto.codigo;
+                    row.querySelector('.descricao-input').value = produto.descricao;
+                    row.querySelector('.valor-unitario').value = produto.ultimoValor;
+                    
+                    // Calcular subtotal
+                    calcularSubtotal(row.querySelector('.quantidade'));
+                    
+                    // Fechar autocomplete
+                    container.classList.add('hidden');
+                });
+                
+                container.appendChild(div);
+            });
+            
+            container.classList.remove('hidden');
+            
+            // Reposicionar quando a janela for redimensionada
+            const reposition = () => {
+                if (!container.classList.contains('hidden')) {
+                    const newRect = input.getBoundingClientRect();
+                    container.style.left = newRect.left + 'px';
+                    container.style.top = (newRect.bottom + 2) + 'px';
+                    container.style.width = newRect.width + 'px';
+                }
+            };
+            
+            window.addEventListener('scroll', reposition);
+            window.addEventListener('resize', reposition);
+        }
+        
+        function loadRegistros() {
+            const tbody = document.getElementById('registrosTable');
+            const filtroEmpresa = document.getElementById('filtroEmpresaRegistros');
+            
+            // Atualizar filtro de empresas
+            const empresas = [...new Set(registrosProdutos.map(p => p.empresa))].sort();
+            filtroEmpresa.innerHTML = '<option value="">Todas as empresas</option>';
+            empresas.forEach(empresa => {
+                const option = document.createElement('option');
+                option.value = empresa;
+                option.textContent = empresa;
+                filtroEmpresa.appendChild(option);
+            });
+            
+            // Carregar registros
+            tbody.innerHTML = '';
+            
+            const registrosOrdenados = [...registrosProdutos].sort((a, b) => {
+                // Ordenar por empresa, depois por código
+                if (a.empresa !== b.empresa) {
+                    return a.empresa.localeCompare(b.empresa);
+                }
+                return a.codigo.localeCompare(b.codigo);
+            });
+            
+            registrosOrdenados.forEach(produto => {
+                const row = document.createElement('tr');
+                row.className = 'border-b theme-border hover:theme-bg-primary';
+                row.innerHTML = `
+                    <td class="p-3">
+                        <input type="text" value="${produto.codigo}" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-sm font-mono codigo-edit" data-original="${produto.codigo}">
+                    </td>
+                    <td class="p-3">
+                        <input type="text" value="${produto.descricao}" class="w-full p-1 border theme-border rounded theme-bg-primary theme-text-primary text-sm descricao-edit" data-original="${produto.descricao}">
+                    </td>
+                    <td class="p-3 theme-text-primary">${produto.empresa}</td>
+                    <td class="p-3 theme-text-primary">${produto.ultimaCotacao}</td>
+                    <td class="p-3 theme-text-primary">R$ ${formatarValor(produto.ultimoValor)}</td>
+                    <td class="p-3">
+                        <button onclick="confirmarEdicaoProduto(this)" class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 transition-colors">
+                            ✓ Confirmar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+                
+
+            });
+        }
+        
+        function filterRegistros() {
+            const search = document.getElementById('searchRegistros').value.toLowerCase();
+            const empresaFiltro = document.getElementById('filtroEmpresaRegistros').value;
+            const rows = document.querySelectorAll('#registrosTable tr');
+            
+            rows.forEach(row => {
+                const codigo = row.cells[0].textContent.toLowerCase();
+                const descricaoInput = row.cells[1].querySelector('input');
+                const descricao = descricaoInput ? descricaoInput.value.toLowerCase() : '';
+                const empresa = row.cells[2].textContent;
+                
+                const matchSearch = codigo.includes(search) || descricao.includes(search);
+                const matchEmpresa = !empresaFiltro || empresa === empresaFiltro;
+                
+                if (matchSearch && matchEmpresa) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function atualizarDescricaoProduto(codigo, novaDescricao) {
+            const produto = registrosProdutos.find(p => p.codigo === codigo);
+            if (produto) {
+                produto.descricao = novaDescricao;
+                produto.dataAtualizacao = new Date().toISOString();
+                localStorage.setItem('registrosProdutos', JSON.stringify(registrosProdutos));
+            }
+        }
+        
+
+        
+        function confirmarEdicaoProduto(botao) {
+            const row = botao.closest('tr');
+            const codigoInput = row.querySelector('.codigo-edit');
+            const descricaoInput = row.querySelector('.descricao-edit');
+            
+            const codigoOriginal = codigoInput.dataset.original;
+            const descricaoOriginal = descricaoInput.dataset.original;
+            const novoCodigo = codigoInput.value.trim();
+            const novaDescricao = descricaoInput.value.trim();
+            
+            // Verificar se houve mudanças
+            if (novoCodigo === codigoOriginal && novaDescricao === descricaoOriginal) {
+                alert('Nenhuma alteração foi feita.');
+                return;
+            }
+            
+            // Verificar se o novo código tem formato válido (com ponto)
+            if (novoCodigo !== codigoOriginal && !novoCodigo.includes('.')) {
+                alert('O código deve ter o formato: prefixo.número (ex: 100.001)');
+                loadRegistros();
+                return;
+            }
+            
+            // Atualizar descrição se mudou
+            if (novaDescricao !== descricaoOriginal) {
+                atualizarDescricaoProduto(codigoOriginal, novaDescricao);
+            }
+            
+            // Atualizar código se mudou
+            if (novoCodigo !== codigoOriginal) {
+                atualizarCodigoProduto(codigoOriginal, novoCodigo);
+            } else {
+                // Se só a descrição mudou, recarregar para mostrar as mudanças
+                loadRegistros();
+            }
+        }
+        
+        function atualizarCodigoProduto(codigoOriginal, novoCodigo) {
+            console.log('🔍 Iniciando atualização de código...');
+            console.log('Código original:', codigoOriginal);
+            console.log('Novo código:', novoCodigo);
+            
+            // Validar formato dos códigos
+            if (!codigoOriginal.includes('.') || !novoCodigo.includes('.')) {
+                alert('❌ Formato de código inválido. Use: prefixo.número (ex: 100.001)');
+                loadRegistros();
+                return;
+            }
+            
+            // Extrair prefixos (tudo antes do primeiro ponto)
+            const prefixoOriginal = codigoOriginal.split('.')[0];
+            const novoPrefixo = novoCodigo.split('.')[0];
+            
+            console.log('Prefixo original:', prefixoOriginal);
+            console.log('Novo prefixo:', novoPrefixo);
+            
+            // Verificar se houve mudança de prefixo
+            const mudouPrefixo = prefixoOriginal !== novoPrefixo;
+            console.log('Mudou prefixo?', mudouPrefixo);
+            
+            if (mudouPrefixo) {
+                console.log('🔄 Detectada mudança de prefixo - alterando família automaticamente!');
+                
+                // Buscar todos os produtos da mesma família (mesmo prefixo)
+                const produtosFamilia = registrosProdutos.filter(produto => {
+                    if (!produto.codigo || !produto.codigo.includes('.')) return false;
+                    const prefixoProduto = produto.codigo.split('.')[0];
+                    return prefixoProduto === prefixoOriginal;
+                });
+                
+                console.log(`📦 Encontrados ${produtosFamilia.length} produtos na família "${prefixoOriginal}"`);
+                console.log('Produtos da família:', produtosFamilia.map(p => p.codigo));
+                
+                // Atualizar todos os códigos da família automaticamente
+                let contadorAtualizados = 0;
+                let cotacoesAfetadas = new Set();
+                
+                produtosFamilia.forEach(produto => {
+                    const novoCodigoCompleto = produto.codigo.replace(prefixoOriginal, novoPrefixo);
+                    console.log(`📝 ${produto.codigo} → ${novoCodigoCompleto}`);
+                    
+                    produto.codigo = novoCodigoCompleto;
+                    produto.prefixoEmpresa = novoPrefixo;
+                    produto.dataAtualizacao = new Date().toISOString();
+                    contadorAtualizados++;
+                });
+                
+                // Atualizar também nas cotações existentes
+                cotacoes.forEach(cotacao => {
+                    let cotacaoModificada = false;
+                    if (cotacao.produtos && Array.isArray(cotacao.produtos)) {
+                        cotacao.produtos.forEach(produto => {
+                            if (produto.codigo && produto.codigo.startsWith(prefixoOriginal + '.')) {
+                                const novoCodigoCompleto = produto.codigo.replace(prefixoOriginal, novoPrefixo);
+                                console.log(`📋 Cotação ${cotacao.numero}: ${produto.codigo} → ${novoCodigoCompleto}`);
+                                produto.codigo = novoCodigoCompleto;
+                                cotacaoModificada = true;
+                            }
+                        });
+                    }
+                    if (cotacaoModificada) {
+                        cotacoesAfetadas.add(cotacao.numero);
+                    }
+                });
+                
+                // Salvar alterações
+                localStorage.setItem('registrosProdutos', JSON.stringify(registrosProdutos));
+                localStorage.setItem('cotacoes', JSON.stringify(cotacoes));
+                
+                console.log('💾 Dados salvos com sucesso!');
+                
+                // Mostrar resultado
+                const mensagemCotacoes = cotacoesAfetadas.size > 0 ? 
+                    `\n\n📋 Cotações atualizadas: ${Array.from(cotacoesAfetadas).join(', ')}` : '';
+                
+                alert(
+                    `✅ FAMÍLIA ALTERADA AUTOMATICAMENTE!\n\n` +
+                    `📦 ${contadorAtualizados} código(s) atualizados\n` +
+                    `🔄 "${prefixoOriginal}.xxx" → "${novoPrefixo}.xxx"` +
+                    mensagemCotacoes
+                );
+                
+                loadRegistros();
+                
+            } else {
+                console.log('📝 Apenas mudança de sufixo detectada');
+                
+                // Verificar se o novo código já existe
+                const codigoExistente = registrosProdutos.find(p => 
+                    p.codigo === novoCodigo && p.codigo !== codigoOriginal
+                );
+                
+                if (codigoExistente) {
+                    alert('❌ Este código já existe! Escolha um código diferente.');
+                    loadRegistros();
+                    return;
+                }
+                
+                // Atualizar apenas este código
+                const produto = registrosProdutos.find(p => p.codigo === codigoOriginal);
+                if (produto) {
+                    produto.codigo = novoCodigo;
+                    produto.dataAtualizacao = new Date().toISOString();
+                    
+                    // Atualizar também nas cotações
+                    cotacoes.forEach(cotacao => {
+                        if (cotacao.produtos && Array.isArray(cotacao.produtos)) {
+                            cotacao.produtos.forEach(produtoCotacao => {
+                                if (produtoCotacao.codigo === codigoOriginal) {
+                                    produtoCotacao.codigo = novoCodigo;
+                                }
+                            });
+                        }
+                    });
+                    
+                    localStorage.setItem('registrosProdutos', JSON.stringify(registrosProdutos));
+                    localStorage.setItem('cotacoes', JSON.stringify(cotacoes));
+                    
+                    console.log('✅ Código individual atualizado');
+                    alert('✅ Código atualizado com sucesso!');
+                    loadRegistros();
+                }
+            }
+        }
+
+        // Adicionar primeiro produto automaticamente
+        setTimeout(() => {
+            addProduto();
+        }, 100);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9844813327df6d55',t:'MTc1ODc0MDIxNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
